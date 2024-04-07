@@ -7,5 +7,5 @@ dependencyResolutionManagement {
         google()
     }
 }
-rootProject.name = "null"
+rootProject.name = "SystemContactsCallDemo"
 include ':app'

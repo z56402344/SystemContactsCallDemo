@@ -144,15 +144,15 @@ public class Base extends Activity {
     }
 
     //todo  从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_2_TOKEN 一致
-    public final String USER_1_TOKEN = "";
+    public final String USER_1_TOKEN = ;
 
     //todo 从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_1_TOKEN 一致
-    public final String USER_2_TOKEN = "";
+    public final String USER_2_TOKEN = ;
 
     /**
      * TODO: 请替换成您自己申请的 AppKey
      */
-    public final String APP_KEY = "";
+    public final String APP_KEY = ;
 
     protected void connectIM(String token, ConnectCallback connectCallback) {
         RongCoreClient.getInstance().logout();
