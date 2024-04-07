@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContactsAccountType xmlns:android="http://schemas.android.com/apk/res/android">
+    <ContactsDataKind android:detailColumn="data2"
+        android:detailSocialSummary="true"
+        android:icon="@mipmap/ic_launcher"
+        android:mimeType="vnd.android.cursor.item/vnd.com.example.callplusdemo.audiocall"
+        android:summaryColumn="data1"/>
+    <ContactsDataKind android:detailColumn="data2"
+        android:detailSocialSummary="true"
+        android:icon="@mipmap/ic_launcher"
+        android:mimeType="vnd.android.cursor.item/vnd.com.example.callplusdemo.videocall"
+        android:summaryColumn="data1"/>
+</ContactsAccountType>

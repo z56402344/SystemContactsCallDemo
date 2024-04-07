@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:orientation="vertical"
+  android:layout_height="match_parent">
+
+  <Button
+    android:id="@+id/btnLoginUser1"
+    android:layout_width="match_parent"
+    android:onClick="mainClick"
+    android:text="登录测试用户1"
+    android:layout_marginTop="50dp"
+    android:layout_height="wrap_content" />
+
+
+  <Button
+    android:id="@+id/btnLoginUser2"
+    android:layout_width="match_parent"
+    android:onClick="mainClick"
+    android:layout_marginTop="5dp"
+    android:text="登录测试用户2"
+    android:layout_height="wrap_content" />
+
+
+  <Button
+    android:id="@+id/btnInsert"
+    android:layout_width="match_parent"
+    android:onClick="mainClick"
+    android:textAllCaps="false"
+    android:visibility="gone"
+    android:text="Insert"
+    android:layout_height="wrap_content" />
+
+</LinearLayout>

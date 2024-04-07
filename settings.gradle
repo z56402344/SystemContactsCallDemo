@@ -1,0 +1,11 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven {url  "https://maven.rongcloud.cn/repository/maven-releases/"}
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+        google()
+    }
+}
+rootProject.name = "null"
+include ':app'
