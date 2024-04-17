@@ -1,15 +1,22 @@
 package com.example.callplusdemo;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.telecom.TelecomManager;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,13 +25,17 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import cn.rongcloud.callplus.api.RCCallPlusAndroidPushConfig;
 import cn.rongcloud.callplus.api.RCCallPlusCallRecord;
 import cn.rongcloud.callplus.api.RCCallPlusClient;
 import cn.rongcloud.callplus.api.RCCallPlusCode;
 import cn.rongcloud.callplus.api.RCCallPlusConfig;
+import cn.rongcloud.callplus.api.RCCallPlusIOSPushConfig;
 import cn.rongcloud.callplus.api.RCCallPlusLocalVideoView;
 import cn.rongcloud.callplus.api.RCCallPlusMediaType;
 import cn.rongcloud.callplus.api.RCCallPlusMediaTypeChangeResult;
+import cn.rongcloud.callplus.api.RCCallPlusPushConfig;
 import cn.rongcloud.callplus.api.RCCallPlusReason;
 import cn.rongcloud.callplus.api.RCCallPlusRemoteVideoView;
 import cn.rongcloud.callplus.api.RCCallPlusRenderMode;
@@ -48,6 +59,7 @@ public class CallPlusActivity extends Base {
     private FrameLayout mLocalVideoViewFrameLayout, mRemoteVideoViewFrameLayout;
     private EditText mEditRemoteUserId;
     TextView tvData, tvMediaType;
+    private long mCallTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +71,13 @@ public class CallPlusActivity extends Base {
         mLocalVideoViewFrameLayout = findViewById(R.id.frameLayoutLocalVideoView);
         mRemoteVideoViewFrameLayout = findViewById(R.id.frameLayoutRemoteVideoView);
         mEditRemoteUserId = findViewById(R.id.editRemoteUserId);
+
+
+
+        //监听电话状态
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        MyPhoneStateListener phoneStateListener = new MyPhoneStateListener();
+        telephonyManager.listen(phoneStateListener,PhoneStateListener.LISTEN_CALL_STATE);
 
         SystemContactsManger.getInstance().addAccount(CallPlusActivity.this);
 
@@ -137,7 +156,28 @@ public class CallPlusActivity extends Base {
          * 开始发起呼叫
          * 该方法内部为异步执行，结果回调是注册的{@link RCCallPlusClient#setCallPlusResultListener(IRCCallPlusResultListener)} 监听的 {@link IRCCallPlusResultListener#onStartCall(RCCallPlusCode, String, List)}方法<br>
          */
-        RCCallPlusClient.getInstance().startCall(userIds, callType, mediaType, null, "startCallExtra");
+        String logoUrl = "https://ac-aclog.oss-cn-beijing.aliyuncs.com/51talkGlobal/Android/image/icon.webp";
+        RCCallPlusAndroidPushConfig androidPushConfig = RCCallPlusAndroidPushConfig.Builder.create()
+                .setFcmImageUrl(logoUrl)
+                .setImageUrlHonor(logoUrl)
+                .setImageUrlHW(logoUrl)
+                .setImageUrlMi(logoUrl)
+                .setChannelIdFCM("51talk_rongyun_fcm")
+                .setChannelIdHW("51talk_rongyun_hw")
+                .setChannelIdMi("51talk_rongyun_mi")
+                .setChannelIdOPPO("51talk_rongyun_oppo")
+                .build();
+        RCCallPlusIOSPushConfig iosPushConfig = RCCallPlusIOSPushConfig.Builder.create().build();
+
+        RCCallPlusPushConfig pushConfig = RCCallPlusPushConfig
+                .Builder
+                .create()
+                .setIOSConfig(iosPushConfig)
+                .setAndroidConfig(androidPushConfig)
+                .setDisablePushTitle(false)
+                .setPushTitle("51talk刘老师")
+                .build();
+        RCCallPlusClient.getInstance().startCall(userIds, callType, mediaType, pushConfig, "startCallExtra");
     }
 
     private void parseContactInfo(Intent intent, Context context) {
@@ -237,6 +277,7 @@ public class CallPlusActivity extends Base {
              */
             @Override
             public void onReceivedCall(RCCallPlusSession callSession, String extra) {
+                mCallTime = System.currentTimeMillis();
                 RCCallPlusSession currentCallSession = RCCallPlusClient.getInstance().getCurrentCallSession();
                 if (currentCallSession != null && !TextUtils.equals(callSession.getCallId(), currentCallSession.getCallId())) {
                     //可以使用该方法判断出，有正在进行中的通话，又有第二通通话呼入的情况<br>
@@ -276,8 +317,10 @@ public class CallPlusActivity extends Base {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(CallPlusActivity.this,"通话结束，callId: "+session.getCallId() +" 通话结束原因："+ reason.getValue(), Toast.LENGTH_SHORT).show();
+                        long duration = (System.currentTimeMillis() - mCallTime) / 1000;
 
+                        Toast.makeText(CallPlusActivity.this,"通话结束，callId: "+session.getCallId() +" 通话结束原因："+ reason.getValue(), Toast.LENGTH_SHORT).show();
+                        Log.i("CallPlusActivity", "onCallEnded: session=" + session.toString() + ", reason=" + reason.toString()+", getCallType="+session.getCallType());
                         if (session.getCallType() == RCCallPlusType.MULTI) {
                             return;
                         }
@@ -288,11 +331,22 @@ public class CallPlusActivity extends Base {
                         String remoteUserPhone = "";
                         String remoteUserId = "";
 
+                        ContentValues values = new ContentValues();
                         for (RCCallPlusUser callPlusUser : session.getRemoteUserList()) {
                             remoteUseName = callPlusUser.getUserId();
                             remoteUserPhone = callPlusUser.getUserId();
                             remoteUserId = callPlusUser.getUserId();
+
+                            //以下是插入通话记录的代码
+                            values.put(CallLog.Calls.CACHED_NAME, remoteUseName);//name：用户姓名
+                            values.put(CallLog.Calls.NUMBER, remoteUserPhone);//number： 电话号码
+                            values.put(CallLog.Calls.TYPE, 1);//通话类型，1呼入、2呼出、3未接
+                            values.put(CallLog.Calls.NEW, 1);//0已看 1未看
+                            values.put(CallLog.Calls.DURATION, duration);//通话时长 单位秒
+                            values.put(CallLog.Calls.DATE, System.currentTimeMillis());//通话时间
                         }
+                        ContentResolver contentResolver = getContentResolver();
+                        contentResolver.insert(CallLog.Calls.CONTENT_URI, values);
                         SystemContactsManger.getInstance().addContact(CallPlusActivity.this.getApplicationContext(), remoteUseName, remoteUserPhone, remoteUserId);
                     }
                 });
@@ -614,4 +668,31 @@ public class CallPlusActivity extends Base {
             str = "失败，错误原因：" + code.getValue();
         } return str;
     }
+
+    class MyPhoneStateListener extends PhoneStateListener {
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public void onCallStateChanged(int state, String phoneNumber) {
+            super.onCallStateChanged(state, phoneNumber);
+            if (state == TelephonyManager.CALL_STATE_IDLE) {
+            } else if (state == TelephonyManager.CALL_STATE_RINGING) {
+            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                //文档：https://developer.android.google.cn/reference/kotlin/android/telecom/TelecomManager?hl=en#endCall()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    TelecomManager telecomManager = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
+                    telecomManager.endCall();
+                } else {
+                    //
+                }
+                Intent intent = new Intent(CallPlusActivity.this, CallPlusActivity.class);
+                intent.putExtra(FROM_SYSTEM_CONTACTS_KEY, true);
+                startActivity(intent);
+            } else if (state == TelephonyManager.CALL_COMPOSER_STATUS_ON) {
+            } else if (state == TelephonyManager.CALL_COMPOSER_STATUS_OFF) {
+            }
+        }
+
+    }
+
 }

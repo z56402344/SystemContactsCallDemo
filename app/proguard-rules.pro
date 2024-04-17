@@ -46,3 +46,6 @@
 
 -ignorewarnings
 
+#firebase
+-keep public class com.google.firebase.* {*;}
+

@@ -22,6 +22,38 @@
     android:text="登录测试用户2"
     android:layout_height="wrap_content" />
 
+  <Button
+      android:id="@+id/btnLoginUser4"
+      android:layout_width="match_parent"
+      android:onClick="mainClick"
+      android:layout_marginTop="5dp"
+      android:text="登录测试用户4"
+      android:layout_height="wrap_content" />
+
+  <Button
+      android:id="@+id/btnLoginUser5"
+      android:layout_width="match_parent"
+      android:onClick="mainClick"
+      android:layout_marginTop="5dp"
+      android:text="登录测试用户5"
+      android:layout_height="wrap_content" />
+
+  <Button
+      android:id="@+id/btnLoginUser6"
+      android:layout_width="match_parent"
+      android:onClick="mainClick"
+      android:layout_marginTop="5dp"
+      android:text="登录测试用户6"
+      android:layout_height="wrap_content" />
+
+  <Button
+      android:id="@+id/btnTest"
+      android:layout_width="match_parent"
+      android:onClick="mainClick"
+      android:layout_marginTop="5dp"
+      android:text="测试通知"
+      android:layout_height="wrap_content" />
+
 
   <Button
     android:id="@+id/btnInsert"

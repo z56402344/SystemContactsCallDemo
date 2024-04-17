@@ -9,14 +9,18 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import io.rong.imlib.IRongCoreCallback.ConnectCallback;
 import io.rong.imlib.IRongCoreEnum.ConnectionErrorCode;
 import io.rong.imlib.IRongCoreEnum.DatabaseOpenStatus;
 import io.rong.imlib.RongCoreClient;
+import io.rong.imlib.model.InitOption;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +30,7 @@ public class Base extends Activity {
     private static final int REQUEST_CODE_AUDIO_VIDEO = 1001;
     private static final int REQUEST_CODE_INTERNET = 1002;
     List<String> unGrantedPermissions;
-    public final String FROM_SYSTEM_CONTACTS_KEY = "FromSystemContacts";
+    public static final String FROM_SYSTEM_CONTACTS_KEY = "FromSystemContacts";
     public final String CURRENT_USER_TOKEN_KEY = "CURRENT_USER_TOKEN_KEY";
     public final String REMOTE_USER_KEY = "REMOTE_USER_KEY";
 
@@ -52,19 +56,22 @@ public class Base extends Activity {
 
     public void checkAudioVideoPermission() {
         String[] permissions = {
-            "android.permission.CAMERA",
-            "android.permission.RECORD_AUDIO",
-            "android.permission.MODIFY_AUDIO_SETTINGS",
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.INTERNET",
-            "android.permission.MODIFY_AUDIO_SETTINGS",
-            "android.permission.READ_CONTACTS",
-            "android.permission.WRITE_CONTACTS",
-            "android.permission.AUTHENTICATE_ACCOUNTS",
-            "android.permission.MANAGE_ACCOUNTS",
-            "android.permission.WRITE_SYNC_SETTINGS",
-            "android.permission.READ_SYNC_SETTINGS"
+                "android.permission.CAMERA",
+                "android.permission.RECORD_AUDIO",
+                "android.permission.MODIFY_AUDIO_SETTINGS",
+                "android.permission.WRITE_EXTERNAL_STORAGE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.INTERNET",
+                "android.permission.MODIFY_AUDIO_SETTINGS",
+                "android.permission.READ_CONTACTS",
+                "android.permission.WRITE_CONTACTS",
+                "android.permission.AUTHENTICATE_ACCOUNTS",
+                "android.permission.MANAGE_ACCOUNTS",
+                "android.permission.WRITE_SYNC_SETTINGS",
+                "android.permission.READ_SYNC_SETTINGS",
+                "android.permission.WRITE_CALL_LOG",
+                "android.permission.ANSWER_PHONE_CALLS",
+                "android.permission.READ_PHONE_STATE"
         };
         checkPermissions(permissions, REQUEST_CODE_AUDIO_VIDEO);
     }
@@ -73,24 +80,24 @@ public class Base extends Activity {
         unGrantedPermissions = new ArrayList();
         for (String permission : permissions) {
             if (ContextCompat.checkSelfPermission(this, permission)
-                != PackageManager.PERMISSION_GRANTED) {
+                    != PackageManager.PERMISSION_GRANTED) {
                 unGrantedPermissions.add(permission);
             }
         }
         if (unGrantedPermissions.isEmpty()) {
-           showToast("有权限");
+            showToast("有权限");
         } else {
             // 部分权限未获得，重新请求获取权限
             String[] array = new String[unGrantedPermissions.size()];
             ActivityCompat.requestPermissions(
-                this, unGrantedPermissions.toArray(array), requestCode);
+                    this, unGrantedPermissions.toArray(array), requestCode);
         }
     }
 
     @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(
-        int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         unGrantedPermissions.clear();
         for (int i = 0; i < permissions.length; i++) {
             if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
@@ -101,7 +108,7 @@ public class Base extends Activity {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
                 Toast.makeText(this, "权限不足：" + permission, Toast.LENGTH_SHORT).show();
             } else {
-                ActivityCompat.requestPermissions(this, new String[] {permission}, 0);
+                ActivityCompat.requestPermissions(this, new String[]{permission}, 0);
             }
         }
     }
@@ -127,12 +134,12 @@ public class Base extends Activity {
             return;
         }
         runOnUiThread(
-            () -> {
-                if (isFinish() || run == null) {
-                    return;
-                }
-                run.run();
-            });
+                () -> {
+                    if (isFinish() || run == null) {
+                        return;
+                    }
+                    run.run();
+                });
     }
 
     @Override
@@ -143,21 +150,29 @@ public class Base extends Activity {
         return false;
     }
 
+    //"userId":"10000"
     //todo  从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_2_TOKEN 一致
-    public final String USER_1_TOKEN = ;
+    public final String USER_1_TOKEN = "LC3EwfsAQH1td8fbUMdd+UZASg5UPd9y7mA6lJzm+0I=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
 
+    //"userId":"10001"
     //todo 从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_1_TOKEN 一致
-    public final String USER_2_TOKEN = ;
+    public final String USER_2_TOKEN = "Dz8yx+FOmZxtd8fbUMdd+TAuIOcImolv0kE8Vy2q0Cc=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public final String USER_4_TOKEN = "1cN5h1FAKlJtd8fbUMdd+dyGgUsEBLmaQPPq/wzAJ8Y=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public final String USER_5_TOKEN = "zv/XIYYjaW9td8fbUMdd+VqeWdbIp8+2f3efpWpbGbg=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public final String USER_6_TOKEN = "gcSD6wasdDdtd8fbUMdd+WW7SL72NzUc7wlv9mjol0k=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
 
     /**
      * TODO: 请替换成您自己申请的 AppKey
      */
-    public final String APP_KEY = ;
+    public final String APP_KEY = "vnroth0kv2nlo";
 
     protected void connectIM(String token, ConnectCallback connectCallback) {
         RongCoreClient.getInstance().logout();
         RongCoreClient.getInstance().disconnect();
-        RongCoreClient.init(Base.this.getApplicationContext(), APP_KEY, false);
+        InitOption initOption = new InitOption.Builder().build();
+        initOption.setEnablePush(true);
+        RongCoreClient.init(Base.this.getApplicationContext(), APP_KEY, initOption);
+
         RongCoreClient.connect(token, new ConnectCallback() {
             @Override
             public void onSuccess(String t) {

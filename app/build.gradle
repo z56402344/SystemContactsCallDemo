@@ -1,23 +1,36 @@
-plugins {
-    id 'com.android.application'
-}
+//plugins {
+//    id 'com.android.application'
+//    id 'com.google.gms.google-services'
+//}
+apply plugin: 'com.android.application'
+// Add the following line:
+apply plugin: 'com.google.gms.google-services'  // Google Services plugin
+
 
 android {
 
     defaultConfig {
         applicationId "com.example.callplusdemo"
         minSdkVersion 21
-        targetSdkVersion 31
-        compileSdkVersion 31
+        targetSdkVersion 33
+        compileSdkVersion 33
         versionCode 1
         multiDexEnabled true
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
+
+        manifestPlaceholders = [
+                //启用 rongpush，如不需要 RongPush 也可以禁用
+                RONG_PUSH_ENABLE : "true",
+                FCM_PUSH_ENABLE : "true"
+        ]
+
     }
 
     buildTypes {
         debug {
+            debuggable true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -45,4 +58,10 @@ dependencies {
     implementation 'cn.rongcloud.sdk:im_libcore:5.8.0' // 即时通讯基础能力库
     implementation 'cn.rongcloud.sdk:callplus_lib:2.1.1'// 音视频通话能力库（不包含 rtc_lib)
     implementation 'cn.rongcloud.sdk:rtc_lib:5.8.0' // 音视频通话基础能力库
+
+    implementation 'cn.rongcloud.sdk.push:fcm:5.8.0'
+    implementation 'cn.rongcloud.sdk.push:rong:5.8.0'
+
+    //    implementation platform('com.google.firebase:firebase-bom:32.8.1')
+//    implementation 'com.google.firebase:firebase-analytics'
 }
