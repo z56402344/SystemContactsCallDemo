@@ -47,6 +47,31 @@
 
   </RelativeLayout>
 
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_marginTop="5dp"
+      android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/mEditTextMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="15dp"
+        android:text="发送文本消息"
+        android:layout_toRightOf="@+id/tvmsgTag" />
+
+    <TextView
+        android:id="@+id/tvmsgTag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_centerVertical="true"
+        android:text="发送普通消息："
+        android:textColor="@color/black"
+        android:textSize="15sp" />
+
+  </RelativeLayout>
+
   <View
     android:layout_width="match_parent"
     android:layout_marginLeft="15dp"
@@ -107,6 +132,16 @@
       android:textAllCaps="false"
       android:onClick="callPlusActivityClick"
       android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/mBtnTextMsg"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:text="发送文本消息"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:onClick="callPlusActivityClick"
+        android:layout_height="wrap_content"/>
 
   </LinearLayout>
 

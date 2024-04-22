@@ -125,5 +125,9 @@
     <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!--求应用的电池使用不受系统优化限制，通常需要用户明确授予权限。从 Android 6.0（API 级别 23）开始，应用可以请求用户授予“忽略电池优化”的权限-->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
 
 </manifest>
