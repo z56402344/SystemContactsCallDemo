@@ -16,6 +16,7 @@ android {
         compileSdkVersion 33
         versionCode 1
         multiDexEnabled true
+        versionName "1.0.0"
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
@@ -23,7 +24,10 @@ android {
         manifestPlaceholders = [
                 //启用 rongpush，如不需要 RongPush 也可以禁用
                 RONG_PUSH_ENABLE : "true",
-                FCM_PUSH_ENABLE : "true"
+                FCM_PUSH_ENABLE : "true",
+                XIAOMI_APP_ID : "2882303761522264936",
+                XIAOMI_APP_KEY: "5402226489936",
+                XIAOMI_APP_REGION : "Global" // Global, Europe, Russis, India
         ]
 
     }
@@ -61,6 +65,8 @@ dependencies {
 
     implementation 'cn.rongcloud.sdk.push:fcm:5.8.0'
     implementation 'cn.rongcloud.sdk.push:rong:5.8.0'
+//    implementation 'cn.rongcloud.sdk.push:xiaomi:5.8.0'
+//    implementation 'cn.rongcloud.sdk.xiaomi_global:5.8.0'
 
     //    implementation platform('com.google.firebase:firebase-bom:32.8.1')
 //    implementation 'com.google.firebase:firebase-analytics'

@@ -49,3 +49,7 @@
 #firebase
 -keep public class com.google.firebase.* {*;}
 
+#小米推送
+-dontwarn com.xiaomi.mipush.sdk.**
+-keep public class com.xiaomi.mipush.sdk.* {*; }
+
