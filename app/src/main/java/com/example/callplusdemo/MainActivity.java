@@ -3,8 +3,13 @@ package com.example.callplusdemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.List;
 import java.util.Map;
@@ -32,7 +37,9 @@ public class MainActivity extends Base {
         checkAudioVideoPermission();
         RongPushPlugin.init(this);
 //        FirebaseAnalytics.setAnalyticsCollectionEnabled(true);
-        setPushEventListener();
+        requestIgnoreBatteryOptimizations();
+//        setPushEventListener();
+
     }
 
     public void mainClick(View view) {
@@ -48,7 +55,7 @@ public class MainActivity extends Base {
         } else if (id == R.id.btnLoginUser6) {
             imLogin(USER_6_TOKEN);
         } else if (id == R.id.btnTest) {
-            clickNotification();
+            clickNotification(this);
         } else if (id == R.id.btnInsert) {
             SystemContactsManger.getInstance().addAccount(MainActivity.this);
             SystemContactsManger.getInstance().clearAll(MainActivity.this.getApplicationContext());
@@ -62,7 +69,7 @@ public class MainActivity extends Base {
         }
     }
 
-    private void clickNotification() {
+    public static void clickNotification(Context context) {
         PushNotificationMessage message = new PushNotificationMessage();
         message.setPushId("CESN-Q7TU-37C0-I2TH");
         message.setConversationType(RongPushClient.ConversationType.PRIVATE);
@@ -94,7 +101,7 @@ public class MainActivity extends Base {
         message.setNotificationId("null");
         message.setIntent("null");
         message.setShowDetail(true);
-        RongNotificationInterface.sendNotification(this,message);
+        RongNotificationInterface.sendNotification(context,message);
     }
 
     private void imLogin(String token) {
@@ -128,7 +135,8 @@ public class MainActivity extends Base {
                         // 该回调仅在通知类型为透传消息时生效。返回 true 表示拦截，false 为不拦截
                         RongNotification.sendNotification(MainActivity.this, notificationMessage);
 //                        RongNotificationInterface.sendNotification(MainActivity.this, notificationMessage);
-                        return false;
+//                        return false;
+                        return true;
                     }
 
 
@@ -196,6 +204,15 @@ public class MainActivity extends Base {
                     public List<TokenBean> onStartTokenReport(List<TokenBean> tokenList) {
                         return PushEventListener.super.onStartTokenReport(tokenList);
                     }
+
                 });
+    }
+
+    private int REQUEST_CODE = 20000;
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void requestIgnoreBatteryOptimizations() {
+        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        intent.setData(Uri.parse("package:" + getPackageName()));
+        startActivityForResult(intent, REQUEST_CODE);
     }
 }

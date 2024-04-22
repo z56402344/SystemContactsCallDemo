@@ -1,7 +1,12 @@
 package com.example.callplusdemo;
 
+import static com.example.callplusdemo.RongNotification.ACTION_ACCEPT_CALL;
+import static com.example.callplusdemo.RongNotification.ACTION_CALL_KEY;
+import static com.example.callplusdemo.RongNotification.ACTION_DECLINE_CALL;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -46,20 +51,30 @@ import cn.rongcloud.callplus.api.RCCallPlusUser;
 import cn.rongcloud.callplus.api.RCCallPlusUserSessionStatus;
 import cn.rongcloud.callplus.api.callback.IRCCallPlusEventListener;
 import cn.rongcloud.callplus.api.callback.IRCCallPlusResultListener;
+import io.rong.imlib.IRongCoreCallback;
 import io.rong.imlib.IRongCoreCallback.ConnectCallback;
+import io.rong.imlib.IRongCoreEnum;
 import io.rong.imlib.IRongCoreEnum.ConnectionErrorCode;
 import io.rong.imlib.IRongCoreEnum.DatabaseOpenStatus;
 import io.rong.imlib.RongCoreClient;
+import io.rong.imlib.model.AndroidConfig;
+import io.rong.imlib.model.Conversation;
+import io.rong.imlib.model.IOSConfig;
 import io.rong.imlib.model.Message;
+import io.rong.imlib.model.MessagePushConfig;
+import io.rong.message.TextMessage;
+import io.rong.push.RongPushClient;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CallPlusActivity extends Base {
 
     private FrameLayout mLocalVideoViewFrameLayout, mRemoteVideoViewFrameLayout;
-    private EditText mEditRemoteUserId;
+    private EditText mEditRemoteUserId, mEditTextMsg;
     TextView tvData, tvMediaType;
     private long mCallTime;
+    private String mCallAction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +86,7 @@ public class CallPlusActivity extends Base {
         mLocalVideoViewFrameLayout = findViewById(R.id.frameLayoutLocalVideoView);
         mRemoteVideoViewFrameLayout = findViewById(R.id.frameLayoutRemoteVideoView);
         mEditRemoteUserId = findViewById(R.id.editRemoteUserId);
+        mEditTextMsg = findViewById(R.id.mEditTextMsg);
 
 
 
@@ -83,13 +99,16 @@ public class CallPlusActivity extends Base {
 
         Intent intent = getIntent();
         boolean fromSystemContacts = intent.getBooleanExtra(FROM_SYSTEM_CONTACTS_KEY, true);
+        mCallAction = intent.getAction();
+//        mCallAction = intent.getStringExtra(ACTION_CALL_KEY);
+        Log.i("fromSystemContacts","fromSystemContacts="+fromSystemContacts+", mCallAction="+mCallAction);
         if (fromSystemContacts) {
             String currentUserToken = SessionManager.getInstance().getString(CURRENT_USER_TOKEN_KEY);
             if (TextUtils.isEmpty(currentUserToken)) {
                 showToast("之前没有登录过IM，无法自动登录");
                 return;
             }
-            parseContactInfo(intent,CallPlusActivity.this);
+            parseContactInfo(intent,CallPlusActivity.this, currentUserToken);
         } else {
             String remoteUserId = SessionManager.getInstance().getString(REMOTE_USER_KEY);
             mEditRemoteUserId.setText(remoteUserId);
@@ -97,6 +116,7 @@ public class CallPlusActivity extends Base {
             setCallPlusListener();
             initCallPlus();
         }
+//        MainActivity.clickNotification(this);
     }
 
     public void callPlusActivityClick(View view) {
@@ -117,7 +137,62 @@ public class CallPlusActivity extends Base {
             RCCallPlusClient.getInstance().enableSpeaker(false);
         } else if (id == R.id.btnHangupCall) {
             RCCallPlusClient.getInstance().hangup();
+        } else if (id == R.id.mBtnTextMsg) {
+            senTextMsg();
         }
+    }
+
+    private void senTextMsg() {
+        String msg = mEditTextMsg.getText().toString().trim();
+        String remoteUserId = mEditRemoteUserId.getText().toString().trim();
+        String pushContent = "51talk_"+msg;
+        String pushData = "{\"key\":\"value\"}";
+
+        Conversation.ConversationType conversationType = Conversation.ConversationType.PRIVATE;
+        TextMessage messageContent = TextMessage.obtain(msg);
+        Message message = Message.obtain(remoteUserId, conversationType, messageContent);
+
+        AndroidConfig androidConfig = new AndroidConfig.Builder()
+//                        .setNotificationId(id)
+//                        .setChannelIdHW(hw)
+//                        .setCategoryHW("IM")
+//                        .setChannelIdMi(mi)
+//                        .setChannelIdOPPO(oppo)
+//                        .setTypeVivo(vivo ? AndroidConfig.SYSTEM : AndroidConfig.OPERATE)
+//                        .setCategoryVivo("IM")
+//                .setFcmCollapseKey()
+                .build();
+        MessagePushConfig messagePushConfig = new MessagePushConfig.Builder()
+                .setPushTitle("51talk")
+                .setPushContent(pushContent)
+                .setPushData(pushData)
+                .setAndroidConfig(androidConfig).build();
+//                .setIOSConfig(new IOSConfig(threadId, apnsId))
+//                .setTemplateId("").build();
+//                .setForceShowDetailContent(forceDetail)
+//                .setForceShowDetailContent(forceDetail)
+        message.setMessagePushConfig(messagePushConfig);
+
+
+        RongCoreClient.getInstance().sendMessage(message, pushContent, pushData, new IRongCoreCallback.ISendMessageCallback() {
+
+            @Override
+            public void onAttached(Message message) {
+
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("sendMessage", "onSuccess="+message.toString());
+            }
+
+            @Override
+            public void onError(Message message, IRongCoreEnum.CoreErrorCode coreErrorCode) {
+                Log.i("sendMessage", "onError "+coreErrorCode.toString());
+
+            }
+        });
+
     }
 
     private void startCall(String remoteUserId,  RCCallPlusMediaType mediaType) {
@@ -162,10 +237,11 @@ public class CallPlusActivity extends Base {
                 .setImageUrlHonor(logoUrl)
                 .setImageUrlHW(logoUrl)
                 .setImageUrlMi(logoUrl)
-                .setChannelIdFCM("51talk_rongyun_fcm")
-                .setChannelIdHW("51talk_rongyun_hw")
-                .setChannelIdMi("51talk_rongyun_mi")
-                .setChannelIdOPPO("51talk_rongyun_oppo")
+               .setChannelIdFCM("51talk_rongyun_fcm")
+//                .setChannelIdFCM("rc_notification_voip_id")
+                .setChannelIdHW("rc_notification_hw_id")
+                .setChannelIdMi("rc_notification_mi_id")
+                .setChannelIdOPPO("rc_notification_oppo_id")
                 .build();
         RCCallPlusIOSPushConfig iosPushConfig = RCCallPlusIOSPushConfig.Builder.create().build();
 
@@ -180,13 +256,14 @@ public class CallPlusActivity extends Base {
         RCCallPlusClient.getInstance().startCall(userIds, callType, mediaType, pushConfig, "startCallExtra");
     }
 
-    private void parseContactInfo(Intent intent, Context context) {
+    private void parseContactInfo(Intent intent, Context context, String currentUserToken) {
         String type = intent.getType();
         Log.d("bugtags", "parseContactInfo--->type : "+ type);
         if ((!TextUtils.equals(type, SystemContactsManger.getInstance().AUDIO_CALL) &&
             !TextUtils.equals(type, SystemContactsManger.getInstance().VIDEO_CALL))) {
             //接收到的跳转信息不是CallPlus通话记录插入的 不做处理
             //开发者可以在这里展示其他页面信息
+            initRongCore(currentUserToken, false, "", null);
             return;
         }
 
@@ -218,29 +295,30 @@ public class CallPlusActivity extends Base {
                 } else if (TextUtils.equals(type, SystemContactsManger.getInstance().VIDEO_CALL)) {
                     mediaType = RCCallPlusMediaType.VIDEO;
                 }
-                String currentUserToken = SessionManager.getInstance().getString(CURRENT_USER_TOKEN_KEY);
+                currentUserToken = SessionManager.getInstance().getString(CURRENT_USER_TOKEN_KEY);
                 RCCallPlusMediaType finalMediaType = mediaType;
-                connectIM(currentUserToken, new ConnectCallback() {
-                    @Override
-                    public void onSuccess(String t) {
-                        setCallPlusListener();
-                        initCallPlus();
-
-                        tvData.setText("当前登录的用户Id：" +  RongCoreClient.getInstance().getCurrentUserId());
-                        startCall(userId, finalMediaType);
-                        showToast("已发起通话");
-                    }
-
-                    @Override
-                    public void onError(ConnectionErrorCode e) {
-                        showToast("IM登录失败，ErrorCode: "+ e.name());
-                    }
-
-                    @Override
-                    public void onDatabaseOpened(DatabaseOpenStatus code) {
-
-                    }
-                });
+//                connectIM(currentUserToken, new ConnectCallback() {
+//                    @Override
+//                    public void onSuccess(String t) {
+//                        setCallPlusListener();
+//                        initCallPlus();
+//
+//                        tvData.setText("当前登录的用户Id：" +  RongCoreClient.getInstance().getCurrentUserId());
+//                        startCall(userId, finalMediaType);
+//                        showToast("已发起通话");
+//                    }
+//
+//                    @Override
+//                    public void onError(ConnectionErrorCode e) {
+//                        showToast("IM登录失败，ErrorCode: "+ e.name());
+//                    }
+//
+//                    @Override
+//                    public void onDatabaseOpened(DatabaseOpenStatus code) {
+//
+//                    }
+//                });
+                initRongCore(currentUserToken, true, userId, finalMediaType);
             } else {
                 //接收到的跳转信息不是CallPlus通话记录插入的 不做处理
                 //开发者可以在这里展示其他页面信息
@@ -295,6 +373,15 @@ public class CallPlusActivity extends Base {
                         }
 
                         setLocalVideoView();//复用发起通话逻辑中的 设置本地视频渲染视图 方法
+                        if (!TextUtils.isEmpty(mCallAction)){
+                            if (mCallAction.equals(ACTION_ACCEPT_CALL)){
+                                acceptCall(callSession);
+                                return;
+                            }else if (mCallAction.equals(ACTION_DECLINE_CALL)){
+                                RCCallPlusClient.getInstance().hangup();
+                                return;
+                            }
+                        }
 
                         showDialog(CallPlusActivity.this, "收到通话，是否接听？", "接听", new OnClickListener() {
                             @Override
@@ -587,6 +674,7 @@ public class CallPlusActivity extends Base {
     }
 
     private void acceptCall(RCCallPlusSession callSession) {
+        Log.i("acceptCall","callSession="+callSession.toString());
         tvMediaType.setText("当前通话为：" + callSession.getMediaType().name());
         setRemoteUserVideoView(callSession.getRemoteUserList());
 
@@ -695,4 +783,35 @@ public class CallPlusActivity extends Base {
 
     }
 
+    public void initRongCore(String currentUserToken, boolean isStartCall, final String userId, final RCCallPlusMediaType finalMediaType) {
+        connectIM(currentUserToken, new ConnectCallback() {
+            @Override
+            public void onSuccess(String t) {
+                setCallPlusListener();
+                initCallPlus();
+                tvData.setText("当前登录的用户Id：" +  RongCoreClient.getInstance().getCurrentUserId());
+                if (isStartCall){
+                    startCall(userId, finalMediaType);
+                    showToast("已发起通话");
+                }
+            }
+
+            @Override
+            public void onError(ConnectionErrorCode e) {
+                showToast("IM登录失败，ErrorCode: "+ e.name());
+            }
+
+            @Override
+            public void onDatabaseOpened(DatabaseOpenStatus code) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+    }
 }

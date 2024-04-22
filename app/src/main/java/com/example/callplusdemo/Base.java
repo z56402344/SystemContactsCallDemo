@@ -71,7 +71,9 @@ public class Base extends Activity {
                 "android.permission.READ_SYNC_SETTINGS",
                 "android.permission.WRITE_CALL_LOG",
                 "android.permission.ANSWER_PHONE_CALLS",
-                "android.permission.READ_PHONE_STATE"
+                "android.permission.READ_PHONE_STATE",
+                "android.permission.POST_NOTIFICATIONS",
+                "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
         };
         checkPermissions(permissions, REQUEST_CODE_AUDIO_VIDEO);
     }
@@ -152,14 +154,14 @@ public class Base extends Activity {
 
     //"userId":"10000"
     //todo  从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_2_TOKEN 一致
-    public final String USER_1_TOKEN = "LC3EwfsAQH1td8fbUMdd+UZASg5UPd9y7mA6lJzm+0I=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public static final String USER_1_TOKEN = "LC3EwfsAQH1td8fbUMdd+UZASg5UPd9y7mA6lJzm+0I=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
 
     //"userId":"10001"
     //todo 从 App Server 获取 UserID 对应的 Token。用户测试本Demo登录，不能和 USER_1_TOKEN 一致
-    public final String USER_2_TOKEN = "Dz8yx+FOmZxtd8fbUMdd+TAuIOcImolv0kE8Vy2q0Cc=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
-    public final String USER_4_TOKEN = "1cN5h1FAKlJtd8fbUMdd+dyGgUsEBLmaQPPq/wzAJ8Y=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
-    public final String USER_5_TOKEN = "zv/XIYYjaW9td8fbUMdd+VqeWdbIp8+2f3efpWpbGbg=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
-    public final String USER_6_TOKEN = "gcSD6wasdDdtd8fbUMdd+WW7SL72NzUc7wlv9mjol0k=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public static final String USER_2_TOKEN = "Dz8yx+FOmZxtd8fbUMdd+TAuIOcImolv0kE8Vy2q0Cc=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public static final String USER_4_TOKEN = "1cN5h1FAKlJtd8fbUMdd+dyGgUsEBLmaQPPq/wzAJ8Y=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public static final String USER_5_TOKEN = "zv/XIYYjaW9td8fbUMdd+VqeWdbIp8+2f3efpWpbGbg=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
+    public static final String USER_6_TOKEN = "gcSD6wasdDdtd8fbUMdd+WW7SL72NzUc7wlv9mjol0k=@yc5p.cn.rongnav.com;yc5p.cn.rongcfg.com";
 
     /**
      * TODO: 请替换成您自己申请的 AppKey
